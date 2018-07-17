@@ -17,13 +17,14 @@
       @startTracking="startTracking"
       @stopTracking="stopTracking"
       @updateProgress="updateProgress"
+      @updateContentState="updateContentState"
       :id="content.id"
       :kind="content.kind"
       :files="content.files"
       :contentId="content.content_id"
       :channelId="channelId"
       :available="content.available"
-      :extraFields="content.extra_fields"
+      :extraFields="extraFields"
       :initSession="initSession"
     />
 
@@ -34,13 +35,14 @@
       @startTracking="startTracking"
       @stopTracking="stopTracking"
       @updateProgress="updateProgress"
+      @updateContentState="updateContentState"
       :id="content.id"
       :kind="content.kind"
       :files="content.files"
       :contentId="content.content_id"
       :channelId="channelId"
       :available="content.available"
-      :extraFields="content.extra_fields"
+      :extraFields="extraFields"
       :initSession="initSession"
     />
 
@@ -120,6 +122,7 @@
     updateProgress as updateProgressAction,
     startTrackingProgress as startTracking,
     stopTrackingProgress as stopTracking,
+    updateContentState as updateContentNodeState
   } from 'kolibri.coreVue.vuex.actions';
   import { ContentNodeKinds } from 'kolibri.coreVue.vuex.constants';
   import { isUserLoggedIn, facilityConfig, contentPoints } from 'kolibri.coreVue.vuex.getters';
@@ -232,6 +235,9 @@
         const summaryProgress = this.updateProgressAction(progressPercent, forceSave);
         updateContentNodeProgress(this.channelId, this.contentNodeId, summaryProgress);
       },
+      updateContentState(contentState, forceSave = true) {
+        this.updateContentNodeState(contentState, forceSave);
+      },
       markAsComplete() {
         this.wasIncomplete = false;
       },
@@ -254,6 +260,7 @@
         pageName: state => state.pageName,
         recommended: state => state.pageState.recommended,
         summaryProgress: state => state.core.logging.summary.progress,
+        extraFields: state => state.core.logging.summary.extra_fields,
         sessionProgress: state => state.core.logging.session.progress,
         pageMode,
         isUserLoggedIn,
@@ -263,6 +270,7 @@
       actions: {
         initSessionAction,
         updateProgressAction,
+        updateContentNodeState,
         startTracking,
         stopTracking,
       },

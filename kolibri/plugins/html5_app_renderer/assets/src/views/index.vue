@@ -45,6 +45,7 @@
       },
     },
     mounted() {
+      window.addEventListener('message', this.iframeMessageReceived, true);
       this.$emit('startTracking');
       const self = this;
       this.timeout = setTimeout(() => {
@@ -56,6 +57,33 @@
         clearTimeout(this.timeout);
       }
       this.$emit('stopTracking');
+    },
+    methods: {
+      iframeMessageReceived(event)
+      {
+        if (!event) {
+          return;
+        }
+        var message = JSON.parse(event.data);
+        if (message.action === 'stateUpdated') {
+          this.$emit('updateContentState', message.params);
+        } else if (message.action === 'hashiInitialized') {
+          var iframe = document.getElementsByTagName("iframe")[0].contentWindow;
+
+          // On guest access, the user will be signed out, so just return
+          // an empty key value store in that case.
+          var contentState = {};
+          if (this.extraFields && this.extraFields.contentState) {
+            contentState = this.extraFields.contentState;
+          }
+          var data = {
+            action: 'kolibriDataLoaded',
+            params: {data: contentState}
+
+          }
+          iframe.postMessage(JSON.stringify(data), '*');
+        }
+      }
     },
     $trs: {
       exitFullscreen: 'Exit fullscreen',

@@ -49,6 +49,14 @@ const timeThreshold = 60; // Update logs if 60 seconds have passed since last up
  */
 
 function _contentSummaryLoggingState(data) {
+  // In older versions of Kolibri, extra_fields was being
+  // set to a string rep of an object rather than set to
+  // an actual object. Hence here we need to ensure that
+  // if we do get a string, we convert it to an object.
+  var extraFields = data.extra_fields;
+  if (typeof extraFields === "string") {
+    extraFields = JSON.parse(extraFields);
+  }
   const state = {
     id: data.pk,
     start_timestamp: data.start_timestamp,
@@ -56,7 +64,7 @@ function _contentSummaryLoggingState(data) {
     end_timestamp: data.end_timestamp,
     progress: data.progress,
     time_spent: data.time_spent,
-    extra_fields: data.extra_fields,
+    extra_fields: extraFields,
     time_spent_before_current_session: data.time_spent,
     progress_before_current_session: data.progress,
   };
@@ -322,7 +330,7 @@ function initContentSession(store, channelId, contentId, contentKind) {
               end_timestamp: now(),
               progress: 0,
               time_spent: 0,
-              extra_fields: '{}',
+              extra_fields: {},
               time_spent_before_current_session: 0,
               progress_before_current_session: 0,
             })
@@ -359,7 +367,7 @@ function initContentSession(store, channelId, contentId, contentKind) {
       end_timestamp: now(),
       time_spent: 0,
       progress: 0,
-      extra_fields: '{}',
+      extra_fields: {},
     })
   );
 
@@ -548,6 +556,23 @@ function updateTimeSpent(store, forceSave = false) {
     saveLogs(store);
   }
 }
+
+/**
+ * Update the content state in the summary log
+ * To be called periodically by interval timer
+ * Must be called after initContentSession
+ * @param {boolean} forceSave
+ */
+function updateContentState(store, contentState, forceSave = false) {
+  /* Update the logging state with new content state information */
+  store.dispatch('SET_LOGGING_CONTENT_STATE', contentState);
+
+  // update the time spent value to check time since last save
+  // and save if necessary, or save then reset the timer if forceSave
+  // is true
+  updateTimeSpent(store, forceSave);
+}
+
 
 /**
  * Start interval timer and set start time
@@ -773,6 +798,7 @@ export {
   setChannelInfo,
   startTrackingProgress,
   stopTrackingProgress,
+  updateContentState,
   updateTimeSpent,
   updateProgress,
   updateExerciseProgress,

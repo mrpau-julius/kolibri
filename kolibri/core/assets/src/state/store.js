@@ -108,6 +108,10 @@ export const coreMutations = {
   SET_LOGGING_COMPLETION_TIME(state, time) {
     state.core.logging.summary.completion_timestamp = time;
   },
+  SET_LOGGING_CONTENT_STATE(state, contentState) {
+    // TODO: Consider whether we want to save these to the session log as well.
+    state.core.logging.summary.extra_fields.contentState = contentState;
+  },
   SET_LOGGING_TIME(state, sessionTime, summaryTime, currentTime) {
     state.core.logging.session.end_timestamp = currentTime;
     state.core.logging.summary.end_timestamp = currentTime;
